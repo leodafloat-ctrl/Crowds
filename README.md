@@ -1,100 +1,59 @@
-# vinext-starter
+# Crowds
 
-A clean full-stack starter running on
-[vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and
-Drizzle support.
+Crowds 是一款手機優先的社群帳號觀察遊戲。玩家會查看虛構貼文、留言、互動數字與個人頁面，再判斷帳號屬於真人、協同行動帳號或行銷帳號。
 
-## Prerequisites
+> 遊戲中的人物、帳號、政黨、貼文與事件皆為虛構；相似之處純屬巧合。
 
-- Node.js `>=22.13.0`
+## 本機執行
 
-## Quick Start
+需要 Node.js 22.13.0 以上版本。
 
 ```bash
 npm install
 npm run dev
-npm run build
 ```
 
-This starter does not use `wrangler.jsonc`.
+若要單獨預覽 GitHub Pages 的純靜態版本：
 
-## Included Shape
-
-- edit site code under `app/`
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `db/schema.ts` starts intentionally empty
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Email and name are intended for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive
-`oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty
-`name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by
-`oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+npm run dev:pages
+npm run build:pages
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+`npm run build` 仍會驗證原本的 Sites/Vinext 版本；兩種部署方式可以並存。
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs
-optional or required ChatGPT sign-in:
+## 發布到 GitHub Pages
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send
-  anonymous visitors through Sign in with ChatGPT.
-- Use `chatGPTSignInPath(returnTo)` and `chatGPTSignOutPath(returnTo)` for
-  browser links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in
-  or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because
-  they depend on per-request identity headers.
+專案已包含 `.github/workflows/deploy-pages.yml`。把專案推送至 GitHub 後：
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the
-OAuth cookies, and identity header injection. Do not implement app routes for
-those reserved paths. Routes that do not import and call the helper remain
-anonymous-compatible.
+1. 進入 repository 的 **Settings → Pages**。
+2. 在 **Build and deployment** 的 **Source** 選擇 **GitHub Actions**。
+3. 推送到 `main`，或在 **Actions** 頁面手動執行部署流程。
 
-SIWC establishes identity only; it does not prove workspace membership. Use the
-Sites hosting platform's access policy controls for workspace-wide restrictions,
-or enforce explicit server-side membership or allowlist checks.
+一般 repository 的網址會是：
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write
-actions tied to the current ChatGPT user. Leave public content anonymous.
+```text
+https://你的帳號.github.io/你的-repository名稱/
+```
 
-## Useful Commands
+建置流程會自動讀取 repository 名稱，因此放在子路徑時，圖片與程式檔案仍能正確載入。
 
-- `npm run dev`: start local development
-- `npm run build`: verify the vinext build output
-- `npm test`: build the starter and verify its rendered loading skeleton
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+## 在同一個 repository 增加頁面
 
-## Learn More
+如果新內容仍屬於 Crowds，例如「玩法說明」、「製作名單」或「題庫介紹」，建議放在同一個網站，網址可做成 `/about/`、`/credits/` 等路徑。這個專案使用 Vite 靜態入口；新增頁面時可建立：
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+```text
+github-pages/about/index.html
+github-pages/about/main.tsx
+```
+
+再把該 HTML 加入 `vite.pages.config.ts` 的 `build.rollupOptions.input`，Vite 就會一起產生多頁網站。
+
+如果要放的是另一個完全獨立的遊戲或產品，建議另開 repository。每個 project repository 都可以有自己的 Pages 網址，例如：
+
+```text
+https://你的帳號.github.io/crowds/
+https://你的帳號.github.io/另一個遊戲/
+```
+
+也可以另外建立 `你的帳號.github.io` repository，當成所有作品的入口首頁，再連到各個遊戲。
