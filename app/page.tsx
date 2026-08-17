@@ -683,30 +683,55 @@ function shuffled<T>(items: T[]) {
 
 const supplementalCommentBodies: Record<Verdict, string[]> = {
   human: [
-    "我翻到幾年前的舊文，生活細節和現在接得起來。",
-    "講話很衝，但他以前有公開承認自己看錯。",
-    "當事朋友補的時間和照片能互相對上。",
-    "先別只看這一句，這個帳號平常其實什麼都聊。",
+    "欸，他三年前就有發過同一件生活小事，不像今天才開的帳號。",
+    "上次他罵錯人，後來有補一篇道歉，我還記得。",
+    "我認識留言裡那個人，他們真的常互虧。",
+    "他平常一半在抱怨、一半在曬晚餐啦。",
+    "這個時間他通常都還在上班，發文時間一直差不多。",
+    "我從以前就有追，語氣一直都這麼兇。",
+    "照片裡那件事他去年也有提到，不是突然冒出來的。",
+    "本人後來有回來補充，前後對得上。",
+    "他以前也公開改過說法，不是只刪掉裝沒事。",
+    "朋友帳號的舊照片裡真的有他。",
+    "追蹤很久了，這帳號什麼雞毛蒜皮都會發。",
+    "我不同意他的口氣，但這件事確實有發生。",
   ],
   coordinated: [
-    "剛剛在另一個帳號看到幾乎相同的句子，連標點都一樣。",
-    "這幾個帳號的留言時間靠得太整齊了。",
-    "往前翻會看到他們曾在別的事件使用同一套口號。",
-    "有人把群組任務截圖貼出來了，裡面有回報數量。",
+    "等一下，我剛剛在另一篇看到完全一樣的句子。",
+    "你們怎麼都在 8:03 留言？連句號也一樣。",
+    "這個帳號上個月名字不是這個吧？",
+    "三個人回我的內容一字不差，有點毛。",
+    "有人貼了群組截圖，裡面真的有這句。",
+    "這張照片我在別的城市版本也看過。",
+    "怎麼每個人都叫大家做同一件事，連時間都一樣。",
+    "其中兩個帳號連頭像裁切位置都相同。",
+    "我問來源後，一整排人同時叫我不要帶風向。",
+    "昨天是另一個主題，但出現的還是這幾個帳號。",
+    "這些留言不像在聊天，比較像在回報完成。",
+    "有人把『版本 B』一起貼出來了，還沒刪。",
   ],
   marketing: [
-    "首頁連結最後跳到結帳頁，貼文裡沒有先說是合作。",
-    "上週換了一個熱門話題，最後仍然賣同一樣東西。",
-    "見證帳號幾乎只在這個品牌下面留言。",
-    "標題一直改，但折扣碼從頭到尾都沒換。",
+    "點進首頁怎麼直接變結帳頁？",
+    "上週不是拿另一則新聞賣同一罐嗎？",
+    "這幾個說有效的帳號，好像只留言過這家。",
+    "標題改三次了，折扣碼倒是沒改。",
+    "我找半天沒看到資料來源，只看到購買連結。",
+    "先說免費，填完資料才跳出付款頁。",
+    "這張見證照上個月換名字用過一次。",
+    "留言問副作用都沒回，問價格秒回。",
+    "所謂最後一天，我上週已經看過兩次。",
+    "為什麼每篇不管講什麼，最後都叫人加同一個群？",
+    "品牌合作標籤藏在最下面，小到差點沒看到。",
+    "退款頁找不到，倒數計時重新整理又回到十分鐘。",
   ],
 };
 
 function prepareComments(account: Account) {
-  const supplements = supplementalCommentBodies[account.answer].map((body, index) => ({
+  const commentPool = supplementalCommentBodies[account.answer];
+  const supplements = Array.from({ length: 4 }, (_, index) => ({
     name: ["多看兩眼", "慢慢查的人", "路過補充", "截圖留存中"][index],
     handle: `@deep_read_${account.id}_${index + 1}`,
-    body,
+    body: commentPool[(account.id * 3 + index) % commentPool.length],
     likes: 37 + ((account.id + index) * 41) % 970,
   }));
   const sevenComments = [...account.comments, ...supplements].slice(0, 7);
@@ -734,10 +759,6 @@ const verdictLabels: Record<Verdict, string> = {
 
 function compactNumber(value: number) {
   return value >= 1000 ? `${(value / 1000).toFixed(value >= 10000 ? 0 : 1)}K` : String(value);
-}
-
-function CampBadge({ camp, label }: { camp: Camp; label: string }) {
-  return <span className={`camp-badge camp-${camp}`}>{label}</span>;
 }
 
 function Avatar({ account, small = false }: { account: Account; small?: boolean }) {
@@ -852,10 +873,6 @@ export default function Home() {
               ))}
             </div>
           </fieldset>
-          <div className="camp-intro">
-            <div><span className="camp-swatch copper-swatch" /><strong>榴槤黨</strong><small>泛稱：榴營、榴派、榴友</small></div>
-            <div><span className="camp-swatch berry-swatch" /><strong>葡萄柚黨</strong><small>泛稱：柚營、柚派、柚友</small></div>
-          </div>
           <button className="primary-button" onClick={startGame}>開始調查 <span>→</span></button>
           <p className="fiction-note">所有人物、政黨、貼文與數據皆為虛構。</p>
         </section>
@@ -973,7 +990,6 @@ export default function Home() {
               <Avatar account={account} />
               <span className="account-title"><strong>{account.name}</strong><small>{account.handle} · {account.time}</small></span>
             </button>
-            <CampBadge camp={account.camp} label={account.campLabel} />
           </div>
           <p className="post-copy">{account.post}</p>
           <div className="post-actions">
@@ -991,9 +1007,6 @@ export default function Home() {
               ))}
               {!commentsExpanded && account.comments.length > 3 && (
                 <button className="more-comments" onClick={() => setCommentsExpanded(true)}>下滑看更多留言 <span>↓</span></button>
-              )}
-              {commentsExpanded && (
-                <p className="comment-hint"><strong>Hint</strong>　後段留言有時會補上被省略的來源、時間或關係。</p>
               )}
             </div>
           )}
@@ -1018,7 +1031,6 @@ export default function Home() {
             <div className="profile-hero">
               <Avatar account={account} />
               <div><h2>{account.name}</h2><p>{account.handle}</p></div>
-              <CampBadge camp={account.camp} label={account.campLabel} />
             </div>
             <p className="profile-bio">{account.bio}</p>
             <div className="profile-stats"><span><strong>{account.followers}</strong> 粉絲</span><span><strong>{account.following}</strong> 追蹤中</span></div>

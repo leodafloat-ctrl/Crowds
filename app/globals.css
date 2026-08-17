@@ -74,12 +74,6 @@ button:focus-visible, article:focus-visible, summary:focus-visible {
 .round-picker button.is-selected { border-color: var(--violet); color: var(--violet); background: var(--violet-soft); box-shadow: inset 0 0 0 1px var(--violet); }
 .round-picker button strong { font-size: 19px; }
 .round-picker button span { font-size: 11px; font-weight: 800; }
-.camp-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 24px 0; }
-.camp-intro > div { display: grid; grid-template-columns: 16px 1fr; align-items: center; gap: 2px 9px; padding: 14px; border-radius: 16px; background: #f4f2ee; }
-.camp-intro small { grid-column: 2; color: var(--muted); font-size: 11px; line-height: 1.4; }
-.camp-swatch { width: 13px; height: 13px; border-radius: 50%; }
-.copper-swatch { background: var(--copper); }
-.berry-swatch { background: var(--berry); }
 .primary-button { width: 100%; border: 0; border-radius: 16px; padding: 17px 20px; display: flex; justify-content: space-between; background: var(--graphite); color: white; font-weight: 900; cursor: pointer; box-shadow: 0 7px 0 #111116; transition: transform .15s, box-shadow .15s; }
 .primary-button:hover { transform: translateY(-2px); box-shadow: 0 9px 0 #111116; }
 .primary-button:active { transform: translateY(5px); box-shadow: 0 2px 0 #111116; }
@@ -133,7 +127,6 @@ button:focus-visible, article:focus-visible, summary:focus-visible {
 .avatar-lime { background: linear-gradient(145deg, #b8cb69, #65752a); }
 .avatar-sunset { background: linear-gradient(145deg, #f1a56f, #a94845); }
 .avatar-ink { background: repeating-linear-gradient(135deg, #24242b 0 8px, #55515f 8px 16px); }
-.camp-badge { flex: 0 0 auto; padding: 7px 9px; border-radius: 100px; font-size: 10px; font-weight: 900; }
 .camp-copper { color: #5f412a; background: var(--copper-soft); }
 .camp-berry { color: #8e3836; background: var(--berry-soft); }
 .camp-none { color: #55545c; background: #ecebf0; }
@@ -149,8 +142,6 @@ button:focus-visible, article:focus-visible, summary:focus-visible {
 .comment div > span { color: var(--muted); font-size: 11px; }
 .more-comments { width: 100%; margin: 10px 0 2px; padding: 12px; border: 1px dashed #c9c3f7; border-radius: 12px; color: var(--violet); background: #f8f6ff; font-size: 12px; font-weight: 900; cursor: pointer; }
 .more-comments span { display: inline-block; margin-left: 5px; }
-.comment-hint { margin: 12px 0 0; padding: 11px 13px; border-radius: 11px; color: #6257a3; background: #f4f1ff; font-size: 11px; line-height: 1.5; }
-.comment-hint strong { letter-spacing: .08em; }
 .drag-instruction { margin: 16px 0 0; text-align: center; color: #aaa6af; font-size: 10px; letter-spacing: .12em; }
 .swipe-hint { position: absolute; padding: 14px 18px; border-radius: 12px; background: var(--graphite); color: white; font-size: 18px; font-weight: 900; z-index: 4; pointer-events: none; }
 .swipe-left { left: 5%; transform: rotate(-7deg); }
@@ -179,7 +170,6 @@ button:focus-visible, article:focus-visible, summary:focus-visible {
 .profile-hero .avatar { width: 66px; height: 66px; font-size: 24px; }
 .profile-hero h2 { margin: 0 0 3px; font-size: 23px; }
 .profile-hero p { margin: 0; color: var(--muted); }
-.profile-hero .camp-badge { margin-left: auto; }
 .profile-bio { padding: 0 24px; line-height: 1.55; }
 .profile-stats { display: flex; gap: 20px; padding: 5px 24px 15px; font-size: 13px; }
 .account-facts { display: grid; gap: 8px; margin: 0 24px 20px; padding: 14px; border-radius: 13px; background: #f5f3f7; color: #68656f; font-size: 12px; }
@@ -217,13 +207,11 @@ button:focus-visible, article:focus-visible, summary:focus-visible {
   .play-area { min-height: 540px; padding: 14px 12px; }
   .post-card { padding: 19px; max-height: calc(100vh - 220px); }
   .post-copy { margin: 21px 0; font-size: 20px; }
-  .camp-badge { max-width: 86px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .verdict-bar { min-height: 96px; }
   .verdict { grid-template-columns: auto; gap: 4px; justify-items: center; }
   .verdict > span { grid-row: auto; width: 32px; height: 32px; }
   .verdict b { font-size: 11px; text-align: center; }
   .verdict small { display: none; }
-  .camp-intro { grid-template-columns: 1fr; }
   .landing-card, .briefing-card, .results-card { border-radius: 23px; }
   .profile-sheet { max-height: 96vh; }
 }
