@@ -726,14 +726,32 @@ const supplementalCommentBodies: Record<Verdict, string[]> = {
   ],
 };
 
+const deepReaderProfiles = [
+  { name: "慢慢看完", handle: "@read_to_the_end" },
+  { name: "我有存舊文", handle: "@saved_old_posts" },
+  { name: "問號先留著", handle: "@hold_the_question" },
+  { name: "住這裡很久", handle: "@local_for_years" },
+  { name: "先別急著轉", handle: "@pause_before_share" },
+  { name: "剛好有看到", handle: "@happened_to_see" },
+  { name: "查完再回來", handle: "@back_after_check" },
+  { name: "只是補一句", handle: "@one_more_context" },
+  { name: "舊圖收藏家", handle: "@old_image_archive" },
+  { name: "連結點開了", handle: "@opened_the_link" },
+  { name: "時間對不上", handle: "@timeline_mismatch" },
+  { name: "路人不站隊", handle: "@bystander_no_team" },
+];
+
 function prepareComments(account: Account) {
   const commentPool = supplementalCommentBodies[account.answer];
-  const supplements = Array.from({ length: 4 }, (_, index) => ({
-    name: ["多看兩眼", "慢慢查的人", "路過補充", "截圖留存中"][index],
-    handle: `@deep_read_${account.id}_${index + 1}`,
-    body: commentPool[(account.id * 3 + index) % commentPool.length],
-    likes: 37 + ((account.id + index) * 41) % 970,
-  }));
+  const supplements = Array.from({ length: 4 }, (_, index) => {
+    const profile = deepReaderProfiles[(account.id * 5 + index) % deepReaderProfiles.length];
+    return {
+      name: profile.name,
+      handle: profile.handle,
+      body: commentPool[(account.id * 3 + index) % commentPool.length],
+      likes: 37 + ((account.id + index) * 41) % 970,
+    };
+  });
   const sevenComments = [...account.comments, ...supplements].slice(0, 7);
   return [...shuffled(sevenComments.slice(0, 3)), ...shuffled(sevenComments.slice(3))];
 }
@@ -779,6 +797,7 @@ export default function Home() {
   const [profileOpen, setProfileOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [introOpen, setIntroOpen] = useState(false);
+  const [shareStatus, setShareStatus] = useState("");
   const [results, setResults] = useState<{ account: Account; choice: Verdict; correct: boolean }[]>([]);
   const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
   const startPoint = useRef({ x: 0, y: 0 });
@@ -791,6 +810,7 @@ export default function Home() {
     setCommentsOpen(false);
     setCommentsExpanded(false);
     setProfileOpen(false);
+    setShareStatus("");
     setDrag({ x: 0, y: 0, active: false });
   }
 
@@ -818,6 +838,26 @@ export default function Home() {
     else if (drag.x < -95) choose("coordinated");
     else if (drag.x > 95) choose("human");
     else setDrag({ x: 0, y: 0, active: false });
+  }
+
+  async function shareGame() {
+    const shareData = {
+      title: "Crowds",
+      text: "你看見的是一個人，還是一套劇本？來 Crowds 試著判斷看看。",
+      url: window.location.href,
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        setShareStatus("已開啟分享");
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        setShareStatus("連結已複製");
+      }
+    } catch (error) {
+      if ((error as DOMException).name !== "AbortError") setShareStatus("暫時無法分享");
+    }
+    window.setTimeout(() => setShareStatus(""), 1800);
   }
 
   function prepareGame() {
@@ -993,9 +1033,11 @@ export default function Home() {
           </div>
           <p className="post-copy">{account.post}</p>
           <div className="post-actions">
-            <button onPointerDown={(event) => event.stopPropagation()} onClick={() => setCommentsOpen((open) => !open)}><span>♡</span>{compactNumber(account.likes)}</button>
-            <button onPointerDown={(event) => event.stopPropagation()} onClick={() => setCommentsOpen((open) => !open)}><span>◯</span>{account.replies}</button>
-            <span><b>↻</b>{compactNumber(account.reposts)}</span>
+            <button aria-label={`喜歡 ${compactNumber(account.likes)} 次`} onPointerDown={(event) => event.stopPropagation()} onClick={() => setCommentsOpen((open) => !open)}><span>♡</span>{compactNumber(account.likes)}</button>
+            <button aria-label={`${account.replies} 則留言`} onPointerDown={(event) => event.stopPropagation()} onClick={() => setCommentsOpen((open) => !open)}><span>◯</span>{account.replies}</button>
+            <span aria-label={`轉發 ${compactNumber(account.reposts)} 次`}><b>↻</b>{compactNumber(account.reposts)}</span>
+            <button className="share-action" aria-label="分享 Crowds" onPointerDown={(event) => event.stopPropagation()} onClick={shareGame}><span>↗</span></button>
+            {shareStatus && <em className="share-status" role="status">{shareStatus}</em>}
           </div>
           {commentsOpen && (
             <div className="comments" onPointerDown={(event) => event.stopPropagation()}>

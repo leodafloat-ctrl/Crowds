@@ -131,10 +131,12 @@ button:focus-visible, article:focus-visible, summary:focus-visible {
 .camp-berry { color: #8e3836; background: var(--berry-soft); }
 .camp-none { color: #55545c; background: #ecebf0; }
 .post-copy { margin: 24px 0; font-size: clamp(20px,4vw,26px); font-weight: 720; letter-spacing: -.025em; line-height: 1.55; }
-.post-actions { min-height: 37px; display: flex; align-items: center; gap: 19px; padding-top: 14px; border-top: 1px solid #efedf0; color: #77747e; }
+.post-actions { position: relative; min-height: 37px; display: flex; align-items: center; gap: 19px; padding-top: 14px; border-top: 1px solid #efedf0; color: #77747e; }
 .post-actions button, .post-actions > span { display: flex; align-items: center; gap: 5px; border: 0; padding: 0; background: transparent; color: inherit; font-size: 12px; }
 .post-actions button { cursor: pointer; }
 .post-actions button span, .post-actions span b { font-size: 20px; font-weight: 400; }
+.post-actions .share-action { margin-left: auto; }
+.share-status { position: absolute; top: calc(100% + 7px); right: 0; z-index: 3; padding: 6px 9px; border-radius: 8px; color: white; background: var(--graphite); font-size: 10px; font-style: normal; font-weight: 800; white-space: nowrap; }
 .comments { margin-top: 17px; border-top: 1px solid var(--line); }
 .comment { display: grid; grid-template-columns: 34px 1fr; gap: 10px; padding: 15px 0; border-bottom: 1px solid #efedf0; }
 .mini-avatar { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; font-size: 11px; font-weight: 900; }
