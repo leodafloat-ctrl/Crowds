@@ -63,6 +63,8 @@ button:focus-visible, article:focus-visible, summary:focus-visible {
 .eyebrow { margin: 32px 0 10px; color: var(--violet); font-size: 12px; font-weight: 900; letter-spacing: .18em; text-transform: uppercase; }
 .landing-card h1, .results-card h1 { margin: 0; font-size: clamp(34px, 8vw, 54px); line-height: 1.08; letter-spacing: -.055em; }
 .landing-copy, .results-lede { color: #66636e; line-height: 1.75; margin: 20px 0 24px; }
+.deck-note { margin: -8px 0 22px; padding: 11px 14px; border: 1px solid #ded9ff; border-radius: 12px; color: #6257a3; background: #f4f1ff; font-size: 12px; text-align: center; }
+.deck-note strong { color: var(--violet); font-size: 16px; }
 .camp-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 24px 0; }
 .camp-intro > div { display: grid; grid-template-columns: 16px 1fr; align-items: center; gap: 2px 9px; padding: 14px; border-radius: 16px; background: #f4f2ee; }
 .camp-intro small { grid-column: 2; color: var(--muted); font-size: 11px; line-height: 1.4; }
@@ -97,6 +99,11 @@ button:focus-visible, article:focus-visible, summary:focus-visible {
 .avatar-berry { background: linear-gradient(145deg, #ffac9f, #bb4f4d); }
 .avatar-pink { background: radial-gradient(circle at 40% 35%, #ffd1c8 0 24%, #f0786a 25% 100%); }
 .avatar-gold { background: linear-gradient(145deg, #d6a845, #71500e); }
+.avatar-violet { background: linear-gradient(145deg, #ad9dff, #5841c7); }
+.avatar-ocean { background: linear-gradient(145deg, #61b9c5, #285c78); }
+.avatar-lime { background: linear-gradient(145deg, #b8cb69, #65752a); }
+.avatar-sunset { background: linear-gradient(145deg, #f1a56f, #a94845); }
+.avatar-ink { background: repeating-linear-gradient(135deg, #24242b 0 8px, #55515f 8px 16px); }
 .camp-badge { flex: 0 0 auto; padding: 7px 9px; border-radius: 100px; font-size: 10px; font-weight: 900; }
 .camp-copper { color: #5f412a; background: var(--copper-soft); }
 .camp-berry { color: #8e3836; background: var(--berry-soft); }
