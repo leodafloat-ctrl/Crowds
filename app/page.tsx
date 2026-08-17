@@ -668,7 +668,8 @@ const starterAccounts: Account[] = [
 
 const accounts: Account[] = [...starterAccounts, ...(extraAccounts as Account[])];
 
-const ROUND_SIZE = 10;
+const ROUND_SIZES = [10, 15, 20] as const;
+const DEFAULT_ROUND_SIZE = ROUND_SIZES[0];
 
 function shuffled<T>(items: T[]) {
   const copy = [...items];
@@ -679,15 +680,16 @@ function shuffled<T>(items: T[]) {
   return copy;
 }
 
-function buildDeck() {
-  const verdicts: Verdict[] = ["human", "coordinated", "marketing"];
-  const extraVerdict = verdicts[Math.floor(Math.random() * verdicts.length)];
-  const selected = verdicts.flatMap((verdict) => {
-    const count = verdict === extraVerdict ? 4 : 3;
+function buildDeck(roundSize: number) {
+  const verdicts = shuffled<Verdict>(["human", "coordinated", "marketing"]);
+  const baseCount = Math.floor(roundSize / verdicts.length);
+  const remainder = roundSize % verdicts.length;
+  const selected = verdicts.flatMap((verdict, index) => {
+    const count = baseCount + (index < remainder ? 1 : 0);
     return shuffled(accounts.filter((account) => account.answer === verdict)).slice(0, count);
   });
   return shuffled(selected)
-    .slice(0, ROUND_SIZE)
+    .slice(0, roundSize)
     .map((account) => {
       const optionalComments = shuffled(account.comments.slice(1));
       const optionalCount = Math.random() < 0.5 ? 1 : 2;
@@ -722,11 +724,13 @@ function MiniAvatar({ comment }: { comment: Comment }) {
 
 export default function Home() {
   const [started, setStarted] = useState(false);
-  const [deck, setDeck] = useState<Account[]>(accounts.slice(0, ROUND_SIZE));
+  const [roundSize, setRoundSize] = useState<number>(DEFAULT_ROUND_SIZE);
+  const [deck, setDeck] = useState<Account[]>(accounts.slice(0, DEFAULT_ROUND_SIZE));
   const [round, setRound] = useState(0);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
+  const [introOpen, setIntroOpen] = useState(false);
   const [results, setResults] = useState<{ account: Account; choice: Verdict; correct: boolean }[]>([]);
   const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
   const startPoint = useRef({ x: 0, y: 0 });
@@ -767,8 +771,8 @@ export default function Home() {
     else setDrag({ x: 0, y: 0, active: false });
   }
 
-  function startGame() {
-    setDeck(buildDeck());
+  function prepareGame() {
+    setDeck(buildDeck(roundSize));
     setRound(0);
     setResults([]);
     setStarted(true);
@@ -776,8 +780,14 @@ export default function Home() {
     resetPanels();
   }
 
+  function startGame() {
+    prepareGame();
+    setIntroOpen(true);
+  }
+
   function restart() {
-    startGame();
+    prepareGame();
+    setIntroOpen(false);
   }
 
   function goHome() {
@@ -785,6 +795,7 @@ export default function Home() {
     setRound(0);
     setResults([]);
     setHelpOpen(false);
+    setIntroOpen(false);
     resetPanels();
   }
 
@@ -796,13 +807,50 @@ export default function Home() {
           <p className="eyebrow">一場社群觀察遊戲</p>
           <h1>你看見的是一個人，<br />還是一套劇本？</h1>
           <p className="landing-copy">查看貼文、留言與個人主頁，在有限線索中判斷帳號。立場激烈不等於造假，粉絲很多也不等於可信。</p>
-          <p className="deck-note"><strong>50</strong> 個虛構帳號題庫 · 每局隨機抽 <strong>10</strong> 題</p>
+          <p className="deck-note"><strong>50</strong> 個虛構帳號題庫 · 每局隨機抽題</p>
+          <fieldset className="round-picker">
+            <legend>這一局想玩幾題？</legend>
+            <div>
+              {ROUND_SIZES.map((size) => (
+                <button
+                  type="button"
+                  className={roundSize === size ? "is-selected" : ""}
+                  aria-pressed={roundSize === size}
+                  onClick={() => setRoundSize(size)}
+                  key={size}
+                >
+                  <strong>{size}</strong><span>題</span>
+                </button>
+              ))}
+            </div>
+          </fieldset>
           <div className="camp-intro">
             <div><span className="camp-swatch copper-swatch" /><strong>榴槤黨</strong><small>泛稱：榴營、榴派、榴友</small></div>
             <div><span className="camp-swatch berry-swatch" /><strong>葡萄柚黨</strong><small>泛稱：柚營、柚派、柚友</small></div>
           </div>
           <button className="primary-button" onClick={startGame}>開始調查 <span>→</span></button>
           <p className="fiction-note">所有人物、政黨、貼文與數據皆為虛構。</p>
+        </section>
+      </main>
+    );
+  }
+
+  if (introOpen) {
+    return (
+      <main className="briefing-shell">
+        <section className="briefing-card">
+          <button className="brand home-brand" onClick={goHome} aria-label="回到 Crowds 首頁"><span className="brand-mark">C</span>Crowds<span className="brand-dot">●</span></button>
+          <p className="eyebrow">開始調查之前</p>
+          <h1>這個帳號，<br />最接近哪一種？</h1>
+          <p className="briefing-copy">本局共有 <strong>{deck.length} 題</strong>。請根據文章內容與帳號線索，判斷這則貼文的帳號最可能屬於以下哪一種類型。</p>
+          <div className="briefing-verdicts">
+            <div className="briefing-verdict briefing-coordinated"><span>←</span><p><strong>疑似協同行動</strong><small>多個帳號有計畫地共同操作</small></p></div>
+            <div className="briefing-verdict briefing-marketing"><span>↓</span><p><strong>行銷／內容農場</strong><small>以導購、流量或名單蒐集為優先</small></p></div>
+            <div className="briefing-verdict briefing-human"><span>→</span><p><strong>一般使用者</strong><small>具有連續而自然的生活脈絡</small></p></div>
+          </div>
+          <p className="comment-reminder"><strong>留言也可以看看。</strong>點擊愛心或留言數，就能查看互動內容；點頭像則能進入個人主頁。</p>
+          <button className="primary-button" onClick={() => setIntroOpen(false)}>開始第一題 <span>→</span></button>
+          <p className="fiction-note">所有人物、帳號、政黨、貼文、留言與數據皆為虛構。</p>
         </section>
       </main>
     );
