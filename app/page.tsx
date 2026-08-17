@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { extraAccounts } from "./data/accounts-extra";
 
 type Verdict = "human" | "coordinated" | "marketing";
 type Camp = "copper" | "berry" | "none";
@@ -37,7 +38,7 @@ type Account = {
   reveal: string[];
 };
 
-const accounts: Account[] = [
+const starterAccounts: Account[] = [
   {
     id: 1,
     name: "巷口觀察員",
@@ -665,6 +666,8 @@ const accounts: Account[] = [
   },
 ];
 
+const accounts: Account[] = [...starterAccounts, ...(extraAccounts as Account[])];
+
 const ROUND_SIZE = 10;
 
 function shuffled<T>(items: T[]) {
@@ -683,7 +686,16 @@ function buildDeck() {
     const count = verdict === extraVerdict ? 4 : 3;
     return shuffled(accounts.filter((account) => account.answer === verdict)).slice(0, count);
   });
-  return shuffled(selected).slice(0, ROUND_SIZE);
+  return shuffled(selected)
+    .slice(0, ROUND_SIZE)
+    .map((account) => {
+      const optionalComments = shuffled(account.comments.slice(1));
+      const optionalCount = Math.random() < 0.5 ? 1 : 2;
+      return {
+        ...account,
+        comments: [account.comments[0], ...optionalComments.slice(0, optionalCount)],
+      };
+    });
 }
 
 const verdictLabels: Record<Verdict, string> = {
@@ -714,6 +726,7 @@ export default function Home() {
   const [round, setRound] = useState(0);
   const [commentsOpen, setCommentsOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [results, setResults] = useState<{ account: Account; choice: Verdict; correct: boolean }[]>([]);
   const [drag, setDrag] = useState({ x: 0, y: 0, active: false });
   const startPoint = useRef({ x: 0, y: 0 });
@@ -759,11 +772,20 @@ export default function Home() {
     setRound(0);
     setResults([]);
     setStarted(true);
+    setHelpOpen(false);
     resetPanels();
   }
 
   function restart() {
     startGame();
+  }
+
+  function goHome() {
+    setStarted(false);
+    setRound(0);
+    setResults([]);
+    setHelpOpen(false);
+    resetPanels();
   }
 
   if (!started) {
@@ -774,7 +796,7 @@ export default function Home() {
           <p className="eyebrow">一場社群觀察遊戲</p>
           <h1>你看見的是一個人，<br />還是一套劇本？</h1>
           <p className="landing-copy">查看貼文、留言與個人主頁，在有限線索中判斷帳號。立場激烈不等於造假，粉絲很多也不等於可信。</p>
-          <p className="deck-note"><strong>20</strong> 個虛構帳號題庫 · 每局隨機抽 <strong>10</strong> 題</p>
+          <p className="deck-note"><strong>50</strong> 個虛構帳號題庫 · 每局隨機抽 <strong>10</strong> 題</p>
           <div className="camp-intro">
             <div><span className="camp-swatch copper-swatch" /><strong>榴槤黨</strong><small>泛稱：榴營、榴派、榴友</small></div>
             <div><span className="camp-swatch berry-swatch" /><strong>葡萄柚黨</strong><small>泛稱：柚營、柚派、柚友</small></div>
@@ -790,7 +812,7 @@ export default function Home() {
     return (
       <main className="results-shell">
         <section className="results-card">
-          <div className="brand"><span className="brand-mark">C</span>Crowds<span className="brand-dot">●</span></div>
+          <button className="brand home-brand" onClick={goHome} aria-label="回到 Crowds 首頁"><span className="brand-mark">C</span>Crowds<span className="brand-dot">●</span></button>
           <p className="eyebrow">調查結束</p>
           <div className="score-ring"><strong>{score}</strong><span>／{deck.length}</span></div>
           <h1>{score === deck.length ? "細節全被你看見了。" : "答案，藏在行為的組合裡。"}</h1>
@@ -825,12 +847,30 @@ export default function Home() {
   return (
     <main className="game-shell">
       <header className="topbar">
-        <div className="brand"><span className="brand-mark">C</span>Crowds<span className="brand-dot">●</span></div>
+        <button className="brand home-brand" onClick={goHome} aria-label="回到 Crowds 首頁"><span className="brand-mark">C</span>Crowds<span className="brand-dot">●</span></button>
         <div className="progress-wrap">
           <span>{round + 1} / {deck.length}</span>
           <div className="progress"><i style={{ width: `${((round + 1) / deck.length) * 100}%` }} /></div>
         </div>
-        <button className="help-button" aria-label="查看玩法" title="左滑疑似協同、右滑一般使用者、下滑行銷號">?</button>
+        <div className={`help-wrap ${helpOpen ? "is-open" : ""}`}>
+          <button
+            className="help-button"
+            aria-label="查看解題方式"
+            aria-expanded={helpOpen}
+            aria-controls="solve-help"
+            onClick={() => setHelpOpen((open) => !open)}
+          >?</button>
+          <div className="help-popover" id="solve-help" role="tooltip">
+            <strong>怎麼判斷？</strong>
+            <p>先看貼文，再點頭像檢查加入時間、發文節奏與歷史。</p>
+            <ul>
+              <li>不要只看語氣或立場</li>
+              <li>比對留言是否像真人互動</li>
+              <li>找多個線索形成的模式</li>
+            </ul>
+            <small>左：疑似協同 · 下：行銷 · 右：一般使用者</small>
+          </div>
+        </div>
       </header>
 
       <section className="play-area">
@@ -864,7 +904,6 @@ export default function Home() {
             <button onPointerDown={(event) => event.stopPropagation()} onClick={() => setCommentsOpen((open) => !open)}><span>♡</span>{compactNumber(account.likes)}</button>
             <button onPointerDown={(event) => event.stopPropagation()} onClick={() => setCommentsOpen((open) => !open)}><span>◯</span>{account.replies}</button>
             <span><b>↻</b>{compactNumber(account.reposts)}</span>
-            <span className="inspect-note">留言也是線索</span>
           </div>
           {commentsOpen && (
             <div className="comments" onPointerDown={(event) => event.stopPropagation()}>
@@ -902,7 +941,7 @@ export default function Home() {
             <p className="profile-bio">{account.bio}</p>
             <div className="profile-stats"><span><strong>{account.followers}</strong> 粉絲</span><span><strong>{account.following}</strong> 追蹤中</span></div>
             <div className="account-facts"><span>◷ {account.joined}</span><span>▥ {account.activity}</span></div>
-            <div className="profile-tabs"><strong>串文</strong><span>回覆</span><span>媒體</span></div>
+            <div className="profile-tabs"><strong>串文</strong><span>回覆</span></div>
             <div className="profile-feed">
               {account.history.map((post) => (
                 <article key={post.body}><Avatar account={account} small /><div><strong>{account.name} <small>· {post.time}</small></strong><p>{post.body}</p><span>♡ {post.likes}</span></div></article>
