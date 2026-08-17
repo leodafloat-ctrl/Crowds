@@ -2,6 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { extraAccounts } from "./data/accounts-extra";
+import { moreAccounts } from "./data/accounts-more";
 
 type Verdict = "human" | "coordinated" | "marketing";
 type Camp = "copper" | "berry" | "none";
@@ -666,7 +667,7 @@ const starterAccounts: Account[] = [
   },
 ];
 
-const accounts: Account[] = [...starterAccounts, ...(extraAccounts as Account[])];
+const accounts: Account[] = [...starterAccounts, ...(extraAccounts as Account[]), ...(moreAccounts as Account[])];
 
 const ROUND_SIZES = [10, 15, 20] as const;
 const DEFAULT_ROUND_SIZE = ROUND_SIZES[0];
@@ -680,6 +681,38 @@ function shuffled<T>(items: T[]) {
   return copy;
 }
 
+const supplementalCommentBodies: Record<Verdict, string[]> = {
+  human: [
+    "我翻到幾年前的舊文，生活細節和現在接得起來。",
+    "講話很衝，但他以前有公開承認自己看錯。",
+    "當事朋友補的時間和照片能互相對上。",
+    "先別只看這一句，這個帳號平常其實什麼都聊。",
+  ],
+  coordinated: [
+    "剛剛在另一個帳號看到幾乎相同的句子，連標點都一樣。",
+    "這幾個帳號的留言時間靠得太整齊了。",
+    "往前翻會看到他們曾在別的事件使用同一套口號。",
+    "有人把群組任務截圖貼出來了，裡面有回報數量。",
+  ],
+  marketing: [
+    "首頁連結最後跳到結帳頁，貼文裡沒有先說是合作。",
+    "上週換了一個熱門話題，最後仍然賣同一樣東西。",
+    "見證帳號幾乎只在這個品牌下面留言。",
+    "標題一直改，但折扣碼從頭到尾都沒換。",
+  ],
+};
+
+function prepareComments(account: Account) {
+  const supplements = supplementalCommentBodies[account.answer].map((body, index) => ({
+    name: ["多看兩眼", "慢慢查的人", "路過補充", "截圖留存中"][index],
+    handle: `@deep_read_${account.id}_${index + 1}`,
+    body,
+    likes: 37 + ((account.id + index) * 41) % 970,
+  }));
+  const sevenComments = [...account.comments, ...supplements].slice(0, 7);
+  return [...shuffled(sevenComments.slice(0, 3)), ...shuffled(sevenComments.slice(3))];
+}
+
 function buildDeck(roundSize: number) {
   const verdicts = shuffled<Verdict>(["human", "coordinated", "marketing"]);
   const baseCount = Math.floor(roundSize / verdicts.length);
@@ -690,14 +723,7 @@ function buildDeck(roundSize: number) {
   });
   return shuffled(selected)
     .slice(0, roundSize)
-    .map((account) => {
-      const optionalComments = shuffled(account.comments.slice(1));
-      const optionalCount = Math.random() < 0.5 ? 1 : 2;
-      return {
-        ...account,
-        comments: [account.comments[0], ...optionalComments.slice(0, optionalCount)],
-      };
-    });
+    .map((account) => ({ ...account, comments: prepareComments(account) }));
 }
 
 const verdictLabels: Record<Verdict, string> = {
@@ -728,6 +754,7 @@ export default function Home() {
   const [deck, setDeck] = useState<Account[]>(accounts.slice(0, DEFAULT_ROUND_SIZE));
   const [round, setRound] = useState(0);
   const [commentsOpen, setCommentsOpen] = useState(false);
+  const [commentsExpanded, setCommentsExpanded] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [helpOpen, setHelpOpen] = useState(false);
   const [introOpen, setIntroOpen] = useState(false);
@@ -741,6 +768,7 @@ export default function Home() {
 
   function resetPanels() {
     setCommentsOpen(false);
+    setCommentsExpanded(false);
     setProfileOpen(false);
     setDrag({ x: 0, y: 0, active: false });
   }
@@ -807,7 +835,7 @@ export default function Home() {
           <p className="eyebrow">一場社群觀察遊戲</p>
           <h1>你看見的是一個人，<br />還是一套劇本？</h1>
           <p className="landing-copy">查看貼文、留言與個人主頁，在有限線索中判斷帳號。立場激烈不等於造假，粉絲很多也不等於可信。</p>
-          <p className="deck-note"><strong>50</strong> 個虛構帳號題庫 · 每局隨機抽題</p>
+          <p className="deck-note">完整虛構題庫 · 每局隨機抽題</p>
           <fieldset className="round-picker">
             <legend>這一局想玩幾題？</legend>
             <div>
@@ -955,12 +983,18 @@ export default function Home() {
           </div>
           {commentsOpen && (
             <div className="comments" onPointerDown={(event) => event.stopPropagation()}>
-              {account.comments.map((comment) => (
+              {account.comments.slice(0, commentsExpanded ? 7 : 3).map((comment) => (
                 <div className="comment" key={`${comment.handle}-${comment.body}`}>
                   <MiniAvatar comment={comment} />
                   <div><strong>{comment.name} <small>{comment.handle}</small></strong><p>{comment.body}</p><span>♡ {comment.likes}</span></div>
                 </div>
               ))}
+              {!commentsExpanded && account.comments.length > 3 && (
+                <button className="more-comments" onClick={() => setCommentsExpanded(true)}>下滑看更多留言 <span>↓</span></button>
+              )}
+              {commentsExpanded && (
+                <p className="comment-hint"><strong>Hint</strong>　後段留言有時會補上被省略的來源、時間或關係。</p>
+              )}
             </div>
           )}
           <p className="drag-instruction">拖曳卡片做出判斷</p>

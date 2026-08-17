@@ -147,6 +147,10 @@ button:focus-visible, article:focus-visible, summary:focus-visible {
 .mini-avatar { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 50%; font-size: 11px; font-weight: 900; }
 .comment p { margin: 5px 0; line-height: 1.45; font-size: 13px; }
 .comment div > span { color: var(--muted); font-size: 11px; }
+.more-comments { width: 100%; margin: 10px 0 2px; padding: 12px; border: 1px dashed #c9c3f7; border-radius: 12px; color: var(--violet); background: #f8f6ff; font-size: 12px; font-weight: 900; cursor: pointer; }
+.more-comments span { display: inline-block; margin-left: 5px; }
+.comment-hint { margin: 12px 0 0; padding: 11px 13px; border-radius: 11px; color: #6257a3; background: #f4f1ff; font-size: 11px; line-height: 1.5; }
+.comment-hint strong { letter-spacing: .08em; }
 .drag-instruction { margin: 16px 0 0; text-align: center; color: #aaa6af; font-size: 10px; letter-spacing: .12em; }
 .swipe-hint { position: absolute; padding: 14px 18px; border-radius: 12px; background: var(--graphite); color: white; font-size: 18px; font-weight: 900; z-index: 4; pointer-events: none; }
 .swipe-left { left: 5%; transform: rotate(-7deg); }
