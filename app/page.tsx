@@ -1077,7 +1077,7 @@ export default function Home() {
             <p className="profile-bio">{account.bio}</p>
             <div className="profile-stats"><span><strong>{account.followers}</strong> 粉絲</span><span><strong>{account.following}</strong> 追蹤中</span></div>
             <div className="account-facts"><span>◷ {account.joined}</span><span>▥ {account.activity}</span></div>
-            <div className="profile-tabs"><strong>串文</strong><span>回覆</span></div>
+            <div className="profile-tabs"><strong>貼文</strong><span>回覆</span></div>
             <div className="profile-feed">
               {account.history.map((post) => (
                 <article key={post.body}><Avatar account={account} small /><div><strong>{account.name} <small>· {post.time}</small></strong><p>{post.body}</p><span>♡ {post.likes}</span></div></article>
